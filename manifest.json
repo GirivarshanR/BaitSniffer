@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Comment Scraper",
+  "version": "1.0",
+  "description": "Access and process YouTube comments.",
+
+  "icons": {
+    "16": "icons.png",
+    "48": "icons.png",
+    "128": "icons.png"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icons.png",
+    "default_title": "YouTube Comments"
+  },
+
+  "host_permissions": [
+    "*://www.youtube.com/*"
+  ],
+
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*"],
+      "js": ["content.js"],
+      "css": ["popup.css"],
+      "run_at": "document_end"
+    }
+  ]
+}
