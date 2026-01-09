@@ -1,8 +1,8 @@
 {
-  "manifest_version": 3,
-  "name": "YouTube Comment Scraper",
+"manifest_version" : 3,
+  "name": "Bait Sniffer",
   "version": "1.0",
-  "description": "Access and process YouTube comments.",
+  "description": "Sniffs clickbait before you click.",
 
   "icons": {
     "16": "icons.png",
@@ -13,13 +13,16 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": "icons.png",
-    "default_title": "YouTube Comments"
+    "default_title": "Bait Sniffer"
   },
-
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": ["scripting", "activeTab"],
   "host_permissions": [
-    "*://www.youtube.com/*"
+    "https://www.youtube.com/*"
   ],
-
   "content_scripts": [
     {
       "matches": ["*://www.youtube.com/*"],
