@@ -3,3 +3,4 @@ tgbtn.addEventListener("click", (event) => {
     event.target.classList.toggle("on");
 });    
 
+console.log("Hello")
