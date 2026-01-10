@@ -63,3 +63,11 @@ body {
   border-color: #5c3030;
   border: 1px solid #ffffff;
 }
+.on{
+ background-color: #bca0ff;
+  color: rgb(0, 0, 0); 
+}
+.off{
+  background-color: #ff0000;
+  color: #ff0000;
+}
