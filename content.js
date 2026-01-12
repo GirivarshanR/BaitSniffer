@@ -1,9 +1,11 @@
 let tooltip = null;
 let activeLink = null;
-let enabled = true; // or controlled via storage
+let activeVideoURL = null;
+let enabled = true; // can be controlled via chrome.storage later
 
+// Extract exact YouTube watch URL (videos + shorts)
 function getExactYouTubeURL(href) {
-  // /watch?v=VIDEO_ID&anything
+  // /watch?v=VIDEO_ID
   if (href.startsWith("/watch")) {
     const url = new URL(href, location.origin);
     const videoId = url.searchParams.get("v");
@@ -21,6 +23,7 @@ function getExactYouTubeURL(href) {
   return null;
 }
 
+// Create tooltip
 function createTooltip(text) {
   tooltip = document.createElement("div");
   tooltip.textContent = text;
@@ -42,17 +45,20 @@ function createTooltip(text) {
   document.body.appendChild(tooltip);
 }
 
+// Remove tooltip and reset state
 function removeTooltip() {
   tooltip?.remove();
   tooltip = null;
   activeLink = null;
+  activeVideoURL = null;
 }
 
+// Handle hover
 document.addEventListener("mouseover", (event) => {
   if (!enabled) return;
 
   const a = event.target.closest("a");
-  if (!a || a === activeLink) return;
+  if (!a) return;
 
   const href = a.getAttribute("href");
   if (!href) return;
@@ -60,18 +66,28 @@ document.addEventListener("mouseover", (event) => {
   const exactURL = getExactYouTubeURL(href);
   if (!exactURL) return;
 
+  // 🚫 Prevent multiple tooltip creation for same video
+  if (exactURL === activeVideoURL) return;
+
   activeLink = a;
+  activeVideoURL = exactURL;
+
+  removeTooltip();
   createTooltip(exactURL);
 });
 
+// Move tooltip with mouse
 document.addEventListener("mousemove", (event) => {
   if (!tooltip) return;
+
   tooltip.style.left = event.clientX + 12 + "px";
   tooltip.style.top = event.clientY + 12 + "px";
 });
 
+// Remove tooltip when leaving the video link
 document.addEventListener("mouseout", (event) => {
   if (!activeLink) return;
+
   if (!event.relatedTarget || !event.relatedTarget.closest("a")) {
     removeTooltip();
   }
