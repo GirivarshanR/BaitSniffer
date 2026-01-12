@@ -1,5 +1,5 @@
 {
-"manifest_version" : 3,
+  "manifest_version": 3,
   "name": "Bait Sniffer",
   "version": "1.0",
   "description": "Sniffs clickbait before you click.",
@@ -15,19 +15,22 @@
     "default_icon": "icons.png",
     "default_title": "Bait Sniffer"
   },
+
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": ["scripting", "activeTab"],
+
+  "permissions": ["activeTab", "storage"],
+
   "host_permissions": [
     "https://www.youtube.com/*"
   ],
+
   "content_scripts": [
     {
-      "matches": ["*://www.youtube.com/*"],
+      "matches": ["https://www.youtube.com/*"],
       "js": ["content.js"],
-      "css": ["popup.css"],
       "run_at": "document_end"
     }
   ]
