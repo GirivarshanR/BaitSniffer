@@ -1,29 +1,38 @@
+console.log("BaitSniffer content.js loaded");
+
 let tooltip = null;
 let activeLink = null;
 let activeVideoURL = null;
-let enabled = true; // can be controlled via chrome.storage later
+let modeValue = 1; // OFF by default
 
-// Extract exact YouTube watch URL (videos + shorts)
+// Load initial state
+chrome.storage.local.get(["modeValue"], (res) => {
+  modeValue = res.modeValue ?? 1;
+});
+
+// Listen for toggle changes
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.modeValue) {
+    modeValue = changes.modeValue.newValue;
+    if (modeValue === 1) removeTooltip();
+  }
+});
+
 function getExactYouTubeURL(href) {
-  // /watch?v=VIDEO_ID
   if (href.startsWith("/watch")) {
     const url = new URL(href, location.origin);
-    const videoId = url.searchParams.get("v");
-    if (!videoId) return null;
-    return `https://www.youtube.com/watch?v=${videoId}`;
+    const id = url.searchParams.get("v");
+    return id ? `https://www.youtube.com/watch?v=${id}` : null;
   }
 
-  // /shorts/VIDEO_ID
   if (href.startsWith("/shorts/")) {
-    const videoId = href.split("/shorts/")[1]?.split("?")[0];
-    if (!videoId) return null;
-    return `https://www.youtube.com/watch?v=${videoId}`;
+    const id = href.split("/shorts/")[1]?.split("?")[0];
+    return id ? `https://www.youtube.com/watch?v=${id}` : null;
   }
 
   return null;
 }
 
-// Create tooltip
 function createTooltip(text) {
   tooltip = document.createElement("div");
   tooltip.textContent = text;
@@ -37,15 +46,12 @@ function createTooltip(text) {
     fontSize: "12px",
     fontFamily: "monospace",
     zIndex: "999999",
-    pointerEvents: "none",
-    maxWidth: "420px",
-    wordBreak: "break-all"
+    pointerEvents: "none"
   });
 
   document.body.appendChild(tooltip);
 }
 
-// Remove tooltip and reset state
 function removeTooltip() {
   tooltip?.remove();
   tooltip = null;
@@ -53,21 +59,14 @@ function removeTooltip() {
   activeVideoURL = null;
 }
 
-// Handle hover
-document.addEventListener("mouseover", (event) => {
-  if (!enabled) return;
+document.addEventListener("mouseover", (e) => {
+  if (modeValue !== 0) return;
 
-  const a = event.target.closest("a");
+  const a = e.target.closest("a");
   if (!a) return;
 
-  const href = a.getAttribute("href");
-  if (!href) return;
-
-  const exactURL = getExactYouTubeURL(href);
-  if (!exactURL) return;
-
-  // 🚫 Prevent multiple tooltip creation for same video
-  if (exactURL === activeVideoURL) return;
+  const exactURL = getExactYouTubeURL(a.getAttribute("href") || "");
+  if (!exactURL || exactURL === activeVideoURL) return;
 
   activeLink = a;
   activeVideoURL = exactURL;
@@ -76,19 +75,15 @@ document.addEventListener("mouseover", (event) => {
   createTooltip(exactURL);
 });
 
-// Move tooltip with mouse
-document.addEventListener("mousemove", (event) => {
+document.addEventListener("mousemove", (e) => {
   if (!tooltip) return;
-
-  tooltip.style.left = event.clientX + 12 + "px";
-  tooltip.style.top = event.clientY + 12 + "px";
+  tooltip.style.left = e.clientX + 12 + "px";
+  tooltip.style.top = e.clientY + 12 + "px";
 });
 
-// Remove tooltip when leaving the video link
-document.addEventListener("mouseout", (event) => {
+document.addEventListener("mouseout", (e) => {
   if (!activeLink) return;
-
-  if (!event.relatedTarget || !event.relatedTarget.closest("a")) {
+  if (!e.relatedTarget || !e.relatedTarget.closest("a")) {
     removeTooltip();
   }
 });

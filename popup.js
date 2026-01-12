@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
   const tgbtn = document.getElementById("tg");
 
-  function render(value) {
-    if (value === 1) {
+  function render(modeValue) {
+    if (modeValue === 0) {
       tgbtn.classList.add("on");
       tgbtn.textContent = "Start";
     } else {
@@ -10,28 +10,17 @@ document.addEventListener("DOMContentLoaded", () => {
       tgbtn.textContent = "Stop";
     }
   }
-  chrome.storage.local.get(["clickedValue"], (result) => {
-    const value = result.clickedValue ?? 0;
-    render(value);
+
+  chrome.storage.local.get(["modeValue"], (res) => {
+    render(res.modeValue ?? 1);
   });
 
   tgbtn.addEventListener("click", () => {
-    chrome.storage.local.get(["clickedValue"], (result) => {
-      let clickedValue = result.clickedValue ?? 0;
-      clickedValue = clickedValue === 0 ? 1 : 0;
-
-      chrome.storage.local.set({ clickedValue }, () => {
-        render(clickedValue);
+    chrome.storage.local.get(["modeValue"], (res) => {
+      const next = (res.modeValue ?? 1) === 0 ? 1 : 0;
+      chrome.storage.local.set({ modeValue: next }, () => {
+        render(next);
       });
     });
   });
 });
-
-
-
-
-
-
-console.log("Hello")
-
-
