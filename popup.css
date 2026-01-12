@@ -3,7 +3,7 @@ body {
   width: 360px;
   height: 250px;
   overflow: hidden;
-  background: #2b2b2b; /* match container or neutral */
+  background-color:  #ff0000; /* match container or neutral */
 }
 .container {
   align-items: center;
