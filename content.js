@@ -33,6 +33,14 @@ function getExactYouTubeURL(href) {
   return null;
 }
 
+function extractVideoId(url) {
+  try {
+    return new URL(url).searchParams.get("v");
+  } catch {
+    return null;
+  }
+}
+
 function createTooltip(text) {
   tooltip = document.createElement("div");
   tooltip.textContent = text;
@@ -59,7 +67,18 @@ function removeTooltip() {
   activeVideoURL = null;
 }
 
-document.addEventListener("mouseover", (e) => {
+// ✅ SAFE MESSAGE SENDER
+function safeSendMessage(message) {
+  try {
+    chrome.runtime.sendMessage(message);
+  } catch (err) {
+    console.warn("⚠️ Extension context invalidated. Stopping listener.");
+    document.removeEventListener("mouseover", handleHover);
+  }
+}
+
+// ✅ SINGLE HOVER HANDLER
+function handleHover(e) {
   if (modeValue !== 0) return;
 
   const a = e.target.closest("a");
@@ -73,14 +92,29 @@ document.addEventListener("mouseover", (e) => {
 
   removeTooltip();
   createTooltip(exactURL);
-});
 
+  const videoId = extractVideoId(exactURL);
+  if (!videoId) return;
+
+  console.log("🎯 Hovered video:", videoId);
+
+  safeSendMessage({
+    type: "FETCH_COMMENTS",
+    videoId
+  });
+}
+
+// Attach listener
+document.addEventListener("mouseover", handleHover);
+
+// Tooltip follow mouse
 document.addEventListener("mousemove", (e) => {
   if (!tooltip) return;
   tooltip.style.left = e.clientX + 12 + "px";
   tooltip.style.top = e.clientY + 12 + "px";
 });
 
+// Remove tooltip when leaving link
 document.addEventListener("mouseout", (e) => {
   if (!activeLink) return;
   if (!e.relatedTarget || !e.relatedTarget.closest("a")) {
